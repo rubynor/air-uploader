@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <rootUrl>
+        <![CDATA[http://staging.imagenetmd.com/]]>
+    </rootUrl>
+    <services>
+        <login><![CDATA[api/users/login/]]></login>
+        <upload><![CDATA[api/dicoms]]></upload>
+    </services>
+</root>

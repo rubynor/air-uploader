@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Author ILYA GOLOVACH (aka IngweLand)
+//  http://ingweland.com
+//  ingweland@gmail.com
+//  2012
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:mx="library://ns.adobe.com/flex/mx" width="290" height="80"
+         initialize="this_initializeHandler(event)">
+    <fx:Script>
+    <![CDATA[
+        import com.greensock.TweenNano;
+
+        import mx.events.FlexEvent;
+
+        import spark.core.SpriteVisualElement;
+        //----------------------------------------------------------------------
+        //
+        //  Private properties
+        //
+        //----------------------------------------------------------------------
+
+        private var _mask:SpriteVisualElement;
+
+        //----------------------------------------------------------------------
+        //
+        //  Public methods
+        //
+        //----------------------------------------------------------------------
+
+        public function updateProgress(filesLeft:int, percentageCompleted:Number):void
+        {
+            if(filesLeft == 1)
+            {
+                progressLabel.text = filesLeft.toString() + " file left";
+            }
+            else
+            {
+                progressLabel.text = filesLeft.toString() + " files left";
+            }
+
+
+            TweenNano.to(_mask, 0.4, {scaleX: percentageCompleted});
+        }
+
+        //----------------------------------------------------------------------
+        //
+        //  Private methods
+        //
+        //----------------------------------------------------------------------
+
+        protected function this_initializeHandler(event:FlexEvent):void
+        {
+            _mask = new SpriteVisualElement();
+            _mask.width = this.width - 20;
+            _mask.height = this.height;
+            _mask.x = 10;
+            _mask.graphics.beginFill(0);
+            _mask.graphics.drawRect(0, 0, this.width - 20, this.height);
+            _mask.graphics.endFill();
+            _mask.scaleX = 0;
+
+            this.addElement(_mask);
+
+            bar.mask = _mask;
+        }
+
+    ]]>
+    </fx:Script>
+    <s:BitmapImage source="@Embed(source='assets/images/progress-bar-bottom.png')"/>
+    <s:BitmapImage id="bar" source="@Embed(source='assets/images/progress-bar-top.png')"/>
+    <s:Label id="progressLabel" horizontalCenter="0" y="40" fontSize="32" color="0x4a4a4a"/>
+</s:Group>

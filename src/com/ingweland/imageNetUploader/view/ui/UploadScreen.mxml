@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Author ILYA GOLOVACH (aka IngweLand)
+//  http://ingweland.com
+//  ingweland@gmail.com
+//  2012
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+          xmlns:s="library://ns.adobe.com/flex/spark"
+          xmlns:mx="library://ns.adobe.com/flex/mx"
+          xmlns:components="com.ingweland.imageNetUploader.view.components.*"
+          width="100%" height="100%" gap="0" horizontalAlign="center">
+
+    <fx:Script>
+    <![CDATA[
+        import com.greensock.TweenNano;
+        import com.ingweland.imageNetUploader.events.model.UploadEvent;
+        import com.ingweland.imageNetUploader.model.QueueItemsPool;
+        import com.ingweland.imageNetUploader.model.vo.QueueItemVO;
+        import com.ingweland.imageNetUploader.view.components.QueueItem;
+
+        import mx.events.FlexEvent;
+
+        //----------------------------------------------------------------------
+        //
+        //  Private properties
+        //
+        //----------------------------------------------------------------------
+
+        [Embed(source="assets/images/Cloud.png")]
+        private var CloudClass:Class;
+
+        //----------------------------------------------------------------------
+        //
+        //  Private methods
+        //
+        //----------------------------------------------------------------------
+
+        protected function selectFolder_button_clickHandler(event:MouseEvent):void
+        {
+            var file:File = new File();
+            file.browseForDirectory("Select folder");
+            file.addEventListener(Event.SELECT, directory_selectHandler);
+        }
+
+        protected function selectFiles_button_clickHandler(event:MouseEvent):void
+        {
+            var file:File = new File();
+            file.browseForOpenMultiple("Select files");
+            file.addEventListener(FileListEvent.SELECT_MULTIPLE, files_selectHandler);
+        }
+
+        protected function directory_selectHandler(event:Event):void
+        {
+            var initListing:Array = File(event.target).getDirectoryListing();
+            dispatchEvent(new UploadEvent(UploadEvent.FILES_SELECTED, initListing));
+        }
+
+        protected function drawInitProgressBar():void
+        {
+            progressBar.graphics.clear();
+            progressBar.graphics.beginFill(0x666666);
+            progressBar.graphics.drawRect(0, 0, 300, 20);
+            progressBar.graphics.endFill();
+
+            progressBar.scaleX = 0;
+        }
+
+        protected function files_selectHandler(event:FileListEvent):void
+        {
+            dispatchEvent(new UploadEvent(UploadEvent.FILES_SELECTED, event.files));
+        }
+
+        private function addQueueItems(items:Vector.<QueueItemVO>):void
+        {
+            var item:QueueItem;
+
+            for each (var qivo:QueueItemVO in items)
+            {
+                item = QueueItemsPool.getItem();
+
+                item.data = qivo;
+                queueItemsContainer.addElement(item);
+            }
+
+        }
+
+        protected function upload_button_clickHandler(event:MouseEvent):void
+        {
+            upload_button.mouseEnabled = false;
+            upload_button.label = "Uploading...";
+            dispatchEvent(new UploadEvent(UploadEvent.UPLOAD));
+        }
+
+        //----------------------------------------------------------------------
+        //
+        //  Public methods
+        //
+        //----------------------------------------------------------------------
+
+        public function processSuccessfulUpload():void
+        {
+            upload_button.mouseEnabled = true;
+            upload_button.label = "Upload";
+        }
+
+        public function updateQueue(items:Vector.<QueueItemVO>):void
+        {
+            TweenNano.killTweensOf(addedToQueue_label);
+            addedToQueue_label.alpha = 1;
+            if(items.length == 1)
+            {
+                addedToQueue_label.text = items.length.toString() + " item was added to queue";
+            }
+            else
+            {
+                addedToQueue_label.text = items.length.toString() + " items were added to queue";
+            }
+
+            TweenNano.to(addedToQueue_label, 0.5, {delay:4, alpha:0});
+            addQueueItems(items);
+        }
+    ]]>
+    </fx:Script>
+
+    <s:HGroup gap="60" horizontalAlign="center" horizontalCenter="0" verticalCenter="0">
+        <s:Button id="selectFolder_button" label="Select folder" buttonMode="true"
+                  click="selectFolder_button_clickHandler(event)"
+                  skinClass="com.ingweland.imageNetUploader.view.skins.LightButtonSkin"/>
+        <s:Button id="selectFiles_button" label="Select files" buttonMode="true"
+                  click="selectFiles_button_clickHandler(event)"
+                  skinClass="com.ingweland.imageNetUploader.view.skins.LightButtonSkin"/>
+    </s:HGroup>
+    <s:Spacer height="12"/>
+        <components:ProgressBar id="progressBar"/>
+    <s:Spacer height="6"/>
+    <s:Button id="upload_button" label="Upload" buttonMode="true"
+              click="upload_button_clickHandler(event)" fontSize="24" icon="{CloudClass}"
+              skinClass="com.ingweland.imageNetUploader.view.skins.DarkButtonSkin"/>
+    <s:Spacer height="6"/>
+    <s:Group width="100%" height="100%">
+        <s:Rect width="100%" height="100%">
+            <s:fill>
+                <s:SolidColor alpha="0.8" color="0xffffff"/>
+            </s:fill>
+        </s:Rect>
+        <s:Rect width="100%" height="1">
+            <s:fill>
+                <s:SolidColor color="0"/>
+            </s:fill>
+        </s:Rect>
+        <s:Rect y="1" width="100%" height="1">
+            <s:fill>
+                <s:SolidColor color="0x535456"/>
+            </s:fill>
+        </s:Rect>
+        <s:Rect y="2" width="100%" height="37">
+            <s:fill>
+                <s:LinearGradient rotation="90">
+                    <s:GradientEntry color="0x343537" ratio="0"/>
+                    <s:GradientEntry color="0x19191a" ratio="0"/>
+                </s:LinearGradient>
+            </s:fill>
+        </s:Rect>
+        <s:Rect y="39" width="100%" height="1">
+            <s:fill>
+                <s:SolidColor color="0"/>
+            </s:fill>
+        </s:Rect>
+        <s:Label x="10" color="0xe8e8e8" fontSize="20" fontWeight="bold" text="Upload queue"
+                 y="11"/>
+        <s:Label id="addedToQueue_label" right="10" width="100%" color="0xe8e8e8" fontSize="18"
+                 fontWeight="bold" textAlign="right" y="11"/>
+        <s:Scroller top="40" bottom="0" width="100%">
+            <s:VGroup id="queueItemsContainer" gap="4" paddingTop="4" paddingBottom="4"/>
+        </s:Scroller>
+    </s:Group>
+</s:VGroup>

@@ -1,0 +1,44 @@
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Author ILYA GOLOVACH (aka IngweLand)
+//  http://ingweland.com
+//  ingweland@gmail.com
+//  2012
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+@font-face
+{
+    src: url("assets/fonts/MyriadPro-Regular.otf");
+    fontFamily: "Myriad Pro";
+    fontStyle: normal;
+    fontWeight: normal;
+    embedAsCFF: true;
+    advancedAntiAliasing: true;
+
+}
+
+@font-face
+{
+    src: url("assets/fonts/MyriadPro-Bold.otf");
+    fontFamily: "Myriad Pro";
+    fontStyle: normal;
+    fontWeight: bold;
+    embedAsCFF: true;
+    advancedAntiAliasing: true;
+}
+
+global
+{
+    fontFamily: "Myriad Pro";
+    focusAlpha: 0;
+}
+
+
+

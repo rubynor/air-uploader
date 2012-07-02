@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Author ILYA GOLOVACH (aka IngweLand)
+//  http://ingweland.com
+//  ingweland@gmail.com
+//  2012
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:mx="library://ns.adobe.com/flex/mx"
+         width="410" height="260">
+
+    <fx:Script>
+    <![CDATA[
+        import com.ingweland.imageNetUploader.events.controller.LoginEvent;
+
+        //----------------------------------------------------------------------
+        //
+        //  Public methods
+        //
+        //----------------------------------------------------------------------
+
+        public function processFailedLogin():void
+        {
+            fail_label.visible = true;
+            login_button.mouseEnabled = true;
+        }
+
+        //----------------------------------------------------------------------
+        //
+        //  Private methods
+        //
+        //----------------------------------------------------------------------
+
+        protected function login_button_clickHandler(event:MouseEvent):void
+        {
+            fail_label.visible = false;
+            login_button.mouseEnabled = false;
+            dispatchEvent(new LoginEvent(LoginEvent.LOGIN, userName_ti.text, password_ti.text));
+        }
+    ]]>
+    </fx:Script>
+    <s:filters>
+        <s:DropShadowFilter quality="2" distance="0" blurX="20" blurY="20" color="0" alpha="0.3"/>
+    </s:filters>
+    <s:Rect radiusX="10" radiusY="10" width="100%" height="100%">
+        <s:fill>
+            <s:SolidColor color="0xececec"/>
+        </s:fill>
+        <s:stroke>
+            <s:SolidColorStroke color="0xf8f8f8" weight="6"/>
+        </s:stroke>
+    </s:Rect>
+    <s:VGroup left="32" right="32" top="24" bottom="24"
+              gap="0" horizontalAlign="center">
+        <s:Label width="100%" text="Username" color="0x545454" fontSize="20" />
+        <s:Spacer height="2"/>
+        <s:TextInput id="userName_ti" width="100%" height="36"
+                     skinClass="com.ingweland.imageNetUploader.view.skins.CustomTextInputSkin"/>
+        <s:Spacer height="14"/>
+        <s:Label width="100%" text="Password" fontSize="20" color="0x545454" />
+        <s:Spacer height="2"/>
+        <s:TextInput id="password_ti" width="100%" height="36" displayAsPassword="true"
+                     skinClass="com.ingweland.imageNetUploader.view.skins.CustomTextInputSkin"/>
+        <s:Spacer height="5"/>
+        <s:Label color="0xba0000" visible="false" id="fail_label" text="Login failed" fontSize="14" width="100%"/>
+        <s:Button id="login_button" label="Login" click="login_button_clickHandler(event)"
+                  skinClass="com.ingweland.imageNetUploader.view.skins.DarkButtonSmallSkin" buttonMode="true"/>
+
+    </s:VGroup>
+</s:Group>

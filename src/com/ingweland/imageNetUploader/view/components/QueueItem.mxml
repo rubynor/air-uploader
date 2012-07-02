@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Author ILYA GOLOVACH (aka IngweLand)
+//  http://ingweland.com
+//  ingweland@gmail.com
+//  2012
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:mx="library://ns.adobe.com/flex/mx"
+         width="100%" height="32"
+         >
+    <fx:Script>
+    <![CDATA[
+        import com.ingweland.imageNetUploader.events.model.UploadEvent;
+        import com.ingweland.imageNetUploader.model.QueueItemsPool;
+        import com.ingweland.imageNetUploader.model.vo.QueueItemVO;
+
+        import mx.binding.utils.BindingUtils;
+        import mx.binding.utils.ChangeWatcher;
+        import mx.events.FlexEvent;
+
+        //----------------------------------------------------------------------
+        //
+        //  Private properties
+        //
+        //----------------------------------------------------------------------
+
+        [Embed(source="assets/images/Cross.png")]
+        [Bindable]
+        private var CrossClass:Class;
+
+        /* [Embed(source="assets/images/Tick.png")]
+        [Bindable]
+        private var TickClass:Class; */
+
+        [Embed(source="assets/images/Trash.png")]
+        private var TrashClass:Class;
+
+        //----------------------------------------------------------------------
+        //
+        //  Public properties
+        //
+        //----------------------------------------------------------------------
+
+        //----------------------------------
+        //  data
+        //----------------------------------
+        private var _data:QueueItemVO;
+
+        [Bindable]
+        /**
+         *
+         */
+        public function get data():QueueItemVO
+        {
+            return _data;
+        }
+
+        /**
+         * @private
+         */
+        public function set data(value:QueueItemVO):void
+        {
+            _data = value;
+            if(_data)
+            {
+                filePath_label.text = _data.file.nativePath;
+            }
+        }
+
+        //----------------------------------------------------------------------
+        //
+        //  Public methods
+        //
+        //----------------------------------------------------------------------
+
+        public function removeItem(id:String):void
+        {
+            if(_data.id == id && _data.uploadCompleted)
+            {
+                doRemoveItem();
+                trace()
+                trace("QueueItem.removeItem()");
+                trace()
+            }
+        }
+
+        //----------------------------------------------------------------------
+        //
+        //  Private methods
+        //
+        //----------------------------------------------------------------------
+
+        protected function deleteButton_clickHandler(event:MouseEvent):void
+        {
+            dispatchEvent(new UploadEvent(UploadEvent.REMOVE_ITEM, null, null, 0, 0, _data.id));
+            doRemoveItem();
+        }
+
+        public function doRemoveItem():void
+        {
+                Group(parent).removeElement(this);
+                dispose();
+                QueueItemsPool.returnItem(this);
+                trace()
+                trace("QueueItem.doRemoveItem()");
+                trace()
+        }
+
+        private function dispose():void
+        {
+            filePath_label.text = "";
+            statusIcon.source = null;
+            _data = null;
+        }
+    ]]>
+    </fx:Script>
+    <s:BitmapImage id="statusIcon" verticalCenter="0" x="10" horizontalAlign="center"
+                   verticalAlign="middle"
+                   source="{!data.uploadFailed?null:CrossClass}"/>
+
+    <s:HGroup left="40" right="0" height="100%" gap="10" paddingRight="5"
+              verticalAlign="middle">
+        <s:Label id="filePath_label" width="100%" fontSize="12"/>
+        <s:Image id="deleteButton" source="{TrashClass}" horizontalAlign="center"
+                 verticalAlign="middle" click="deleteButton_clickHandler(event)"
+                 buttonMode="true"/>
+    </s:HGroup>
+</s:Group>
