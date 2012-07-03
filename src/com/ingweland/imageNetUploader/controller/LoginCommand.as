@@ -52,10 +52,6 @@ package com.ingweland.imageNetUploader.controller
                 apiRequestsModel.requests[APIRequestsModel.LOGIN];
             var request:URLRequest = new URLRequest(url);
             request.data = "user[email]=" + event.username + "&user[password]=" + event.password;
-            CONFIG::inDevelopment
-            {
-                request.data = "user[email]=ilya.golovach@gmail.com&user[password]=geness1";
-            }
 
             request.method = "POST";
             loader.addEventListener(Event.COMPLETE, login_completeHandler);

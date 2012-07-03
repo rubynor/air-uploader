@@ -26,8 +26,9 @@ package com.ingweland.imageNetUploader.events.model
         public static const QUEUE_UPDATED:String = "UploadEvent.queueUpdated";
         public static const PROGRESS:String = "UploadEvent.progress";
         public static const COMPLETED:String = "UploadEvent.completed";
-        public static const REMOVE_ITEM:String = "UploadEvent.removeItem";
         public static const UPLOAD:String = "UploadEvent.upload";
+        public static const FAILED:String = "UploadEvent.failed";
+        public static const RETRY:String = "UploadEvent.retry";
 
         //----------------------------------------------------------------------
         //

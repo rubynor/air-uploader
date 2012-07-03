@@ -32,8 +32,8 @@ package
             commandMap.mapEvent(ContextEvent.STARTUP_COMPLETE, LoadGlobalConfigCommand, ContextEvent, true);
             commandMap.mapEvent(LoginEvent.LOGIN, LoginCommand, LoginEvent);
             commandMap.mapEvent(UploadEvent.FILES_SELECTED, ProcessSelectedFilesCommand, UploadEvent);
-            commandMap.mapEvent(UploadEvent.REMOVE_ITEM, RemoveItemFromQueueCommand, UploadEvent);
-            commandMap.mapEvent(UploadEvent.UPLOAD, UploadFilesCommand, UploadEvent);
+            commandMap.mapEvent(UploadEvent.QUEUE_UPDATED, UploadFilesCommand, UploadEvent);
+            commandMap.mapEvent(UploadEvent.RETRY, UploadFilesCommand, UploadEvent);
 
             mediatorMap.mapView(QueueItem, QueueItemMediator);
             mediatorMap.mapView(ProgressBar, ProgressBarMediator);

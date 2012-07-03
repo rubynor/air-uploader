@@ -107,7 +107,16 @@ package com.ingweland.imageNetUploader.controller
             }
             else
             {
-                dispatch(new UploadEvent(UploadEvent.COMPLETED));
+                if(uploadingQueueModel.failedUploads == 0)
+                {
+                    dispatch(new UploadEvent(UploadEvent.COMPLETED));
+                }
+                else
+                {
+                    dispatch(new UploadEvent(UploadEvent.FAILED,
+                        null, null, uploadingQueueModel.failedUploads));
+                }
+
                 commandMap.release(this);
             }
         }

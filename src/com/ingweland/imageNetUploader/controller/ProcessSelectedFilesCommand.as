@@ -70,6 +70,7 @@ package com.ingweland.imageNetUploader.controller
                 }
             }
 
+            
             var tempVector:Vector.<QueueItemVO> = uploadingQueueModel.addItemsToQueue(_dicoms);
             dispatch(new UploadEvent(UploadEvent.QUEUE_UPDATED, null, tempVector));
             var percentageCompleted:Number = uploadingQueueModel.bytesUploaded /

@@ -13,7 +13,9 @@
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
          xmlns:s="library://ns.adobe.com/flex/spark"
          xmlns:mx="library://ns.adobe.com/flex/mx" width="290" height="80"
-         initialize="this_initializeHandler(event)">
+         initialize="this_initializeHandler(event)"
+         removedFromStage="this_removedFromStageHandler(event)"
+         >
     <fx:Script>
     <![CDATA[
         import com.greensock.TweenNano;
@@ -31,21 +33,44 @@
 
         //----------------------------------------------------------------------
         //
+        //  Public properties
+        //
+        //----------------------------------------------------------------------
+
+        //----------------------------------
+        //  filesTotal
+        //----------------------------------
+        private var _filesTotal:int;
+
+        /**
+         *
+         */
+        public function get filesTotal():int
+        {
+            return _filesTotal;
+        }
+
+        /**
+         * @private
+         */
+        public function set filesTotal(value:int):void
+        {
+            if (_filesTotal != value)
+            {
+                _filesTotal = value;
+            }
+        }
+
+        //----------------------------------------------------------------------
+        //
         //  Public methods
         //
         //----------------------------------------------------------------------
 
         public function updateProgress(filesLeft:int, percentageCompleted:Number):void
         {
-            if(filesLeft == 1)
-            {
-                progressLabel.text = filesLeft.toString() + " file left";
-            }
-            else
-            {
-                progressLabel.text = filesLeft.toString() + " files left";
-            }
-
+            progressLabel.text = filesLeft.toString() + " of " + _filesTotal.toString() +
+                " files left";
 
             TweenNano.to(_mask, 0.4, {scaleX: percentageCompleted});
         }
@@ -70,6 +95,13 @@
             this.addElement(_mask);
 
             bar.mask = _mask;
+        }
+
+        protected function this_removedFromStageHandler(event:Event):void
+        {
+            trace("ProgressBar.this_removedFromStageHandler(event)");
+            progressLabel.text = "";
+            _mask.scaleX = 0;
         }
 
     ]]>

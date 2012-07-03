@@ -23,6 +23,7 @@ package com.ingweland.imageNetUploader.model
         //----------------------------------------------------------------------
 
         private var _uploadedInThisSession:Vector.<String> = new Vector.<String>();
+        private var _currentQueueItemIndex:int = 0;
 
         //----------------------------------------------------------------------
         //
@@ -82,6 +83,19 @@ package com.ingweland.imageNetUploader.model
             return _itemsLeft;
         }
 
+        //----------------------------------
+        //  failedUploads
+        //----------------------------------
+        private var _failedUploads:int = 0;
+
+        /**
+         *
+         */
+        public function get failedUploads():int
+        {
+            return _failedUploads;
+        }
+
         //----------------------------------------------------------------------
         //
         //  Public methods
@@ -90,6 +104,8 @@ package com.ingweland.imageNetUploader.model
 
         public function addItemsToQueue(items:Vector.<File>):Vector.<QueueItemVO>
         {
+            reset();
+            _queue.length = 0;
             var tempQIVO:QueueItemVO;
             var tempVector:Vector.<QueueItemVO> = new Vector.<QueueItemVO>();
             for each (var file:File in items)
@@ -104,7 +120,7 @@ package com.ingweland.imageNetUploader.model
                     _bytesTotal += file.size;
                 }
             }
-            _itemsLeft += tempVector.length;
+            _itemsLeft = tempVector.length;
             trace("------------------------------------------------");
             trace("UploadingQueueModel.addItemsToQueue(items)");
             trace("Queue length >> " + _queue.length);
@@ -116,34 +132,10 @@ package com.ingweland.imageNetUploader.model
             return tempVector;
         }
 
-        public function removeItemFromQueue(id:String):void
-        {
-            var limit:int = _queue.length;
-            for (var i:int = 0; i < limit; i++)
-            {
-                if(_queue[i].id == id)
-                {
-                    break;
-                }
-            }
-
-            if(i < _queue.length)
-            {
-                _bytesTotal -= _queue[i].file.size;
-                _itemsLeft--;
-                _queue.splice(i, 1);
-            }
-
-            trace("------------------------------------------------");
-            trace("UploadingQueueModel.removeItemFromQueue(id)");
-            trace("Queue length >> " + _queue.length);
-            trace("Bytes total >> " + _bytesTotal);
-            trace("------------------------------------------------");
-            trace()
-        }
-
         public function resetFailedUploads():void
         {
+            _failedUploads = 0;
+
             for each (var qivo:QueueItemVO in _queue)
             {
                 if(qivo.uploadFailed)
@@ -155,12 +147,9 @@ package com.ingweland.imageNetUploader.model
 
         public function getNextQueueItem():QueueItemVO
         {
-            for each (var qivo:QueueItemVO in _queue)
+            if(_currentQueueItemIndex < _queue.length)
             {
-                if(!qivo.uploadCompleted && !qivo.uploadFailed)
-                {
-                    return qivo;
-                }
+                return _queue[_currentQueueItemIndex];
             }
 
             processUploadCompletion();
@@ -182,6 +171,7 @@ package com.ingweland.imageNetUploader.model
 
         public function processFailedUpload(item:QueueItemVO):void
         {
+            _failedUploads++;
             item.uploadFailed = true;
             updateQueueNumbers(item);
 
@@ -203,6 +193,7 @@ package com.ingweland.imageNetUploader.model
         {
             _bytesUploaded += item.file.size;
             _itemsLeft--;
+            _currentQueueItemIndex++;
         }
 
         private function checkQueueHasItem(item:File):Boolean
@@ -227,11 +218,17 @@ package com.ingweland.imageNetUploader.model
             return false;
         }
 
-        private function processUploadCompletion():void
+        private function reset():void
         {
-            var tempVector:Vector.<QueueItemVO> = new Vector.<QueueItemVO>();
+            _currentQueueItemIndex = 0;
             _bytesTotal = 0;
             _bytesUploaded = 0;
+        }
+
+        private function processUploadCompletion():void
+        {
+            reset();
+            var tempVector:Vector.<QueueItemVO> = new Vector.<QueueItemVO>();
             for each (var qivo:QueueItemVO in _queue)
             {
                 if(!qivo.uploadFailed)

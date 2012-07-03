@@ -10,11 +10,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
-          xmlns:s="library://ns.adobe.com/flex/spark"
-          xmlns:mx="library://ns.adobe.com/flex/mx"
-          xmlns:components="com.ingweland.imageNetUploader.view.components.*"
-          width="100%" height="100%" gap="0" horizontalAlign="center">
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:mx="library://ns.adobe.com/flex/mx"
+         xmlns:components="com.ingweland.imageNetUploader.view.components.*"
+         width="100%" height="100%">
 
     <fx:Script>
     <![CDATA[
@@ -24,7 +24,13 @@
         import com.ingweland.imageNetUploader.model.vo.QueueItemVO;
         import com.ingweland.imageNetUploader.view.components.QueueItem;
 
+        import flashx.textLayout.conversion.TextConverter;
+        import flashx.textLayout.elements.TextFlow;
+        import flashx.textLayout.events.FlowElementMouseEvent;
+
         import mx.events.FlexEvent;
+
+        import spark.components.WindowedApplication;
 
         //----------------------------------------------------------------------
         //
@@ -41,34 +47,10 @@
         //
         //----------------------------------------------------------------------
 
-        protected function selectFolder_button_clickHandler(event:MouseEvent):void
-        {
-            var file:File = new File();
-            file.browseForDirectory("Select folder");
-            file.addEventListener(Event.SELECT, directory_selectHandler);
-        }
-
-        protected function selectFiles_button_clickHandler(event:MouseEvent):void
-        {
-            var file:File = new File();
-            file.browseForOpenMultiple("Select files");
-            file.addEventListener(FileListEvent.SELECT_MULTIPLE, files_selectHandler);
-        }
-
         protected function directory_selectHandler(event:Event):void
         {
             var initListing:Array = File(event.target).getDirectoryListing();
             dispatchEvent(new UploadEvent(UploadEvent.FILES_SELECTED, initListing));
-        }
-
-        protected function drawInitProgressBar():void
-        {
-            progressBar.graphics.clear();
-            progressBar.graphics.beginFill(0x666666);
-            progressBar.graphics.drawRect(0, 0, 300, 20);
-            progressBar.graphics.endFill();
-
-            progressBar.scaleX = 0;
         }
 
         protected function files_selectHandler(event:FileListEvent):void
@@ -92,9 +74,31 @@
 
         protected function upload_button_clickHandler(event:MouseEvent):void
         {
-            upload_button.mouseEnabled = false;
-            upload_button.label = "Uploading...";
-            dispatchEvent(new UploadEvent(UploadEvent.UPLOAD));
+            var file:File = new File();
+            file.browseForDirectory("Select folder");
+            file.addEventListener(Event.SELECT, directory_selectHandler);
+        }
+
+        protected function closeApp_handler(event:FlowElementMouseEvent):void
+        {
+           NativeApplication.nativeApplication.exit();
+        }
+
+        protected function newUpload_handler(event:FlowElementMouseEvent):void
+        {
+            currentState = "browseState";
+        }
+
+        protected function retry_button_clickHandler(event:MouseEvent):void
+        {
+            currentState = "uploadState";
+            dispatchEvent(new UploadEvent(UploadEvent.RETRY));
+        }
+
+        protected function cancelRetry_label_clickHandler(event:MouseEvent):void
+        {
+            currentState = "browseState";
+            queueItemsContainer.removeAllElements();
         }
 
         //----------------------------------------------------------------------
@@ -105,12 +109,67 @@
 
         public function processSuccessfulUpload():void
         {
-            upload_button.mouseEnabled = true;
-            upload_button.label = "Upload";
+            currentState = "successState";
+            var tempString:String = "<TextFlow xmlns='http://ns.adobe.com/textLayout/2008'>" +
+                "<linkNormalFormat color='#488fbe' textDecoration='underline'/>" +
+                "<linkHoverFormat color='#488fbe' textDecoration='underline' />" +
+                "<linkActiveFormat color='#488fbe' textDecoration='underline' />";
+            if(progressBar.filesTotal == 1)
+            {
+                tempString += "1 file was successfully uploaded to your account. You can now "
+            }
+            else
+            {
+                tempString += progressBar.filesTotal.toString() + " files were successfully uploaded to your account. You can now "
+            }
+            tempString += "<a href='event:startNewUploadEvent'>start</a>";
+            tempString += " a new upload or ";
+            tempString += "<a href='event:closeAppEvent'>close</a>";
+            tempString += "</TextFlow>";
+            var tf:TextFlow = TextConverter.importToFlow(tempString, TextConverter.TEXT_LAYOUT_FORMAT);
+            tf.addEventListener("closeAppEvent", closeApp_handler);
+            tf.addEventListener("startNewUploadEvent", newUpload_handler);
+            finalLabel.textFlow = tf;
+        }
+
+        public function processFailedUpload(numFailedItems:int):void
+        {
+            currentState = "failState";
+            var tempString:String = "<TextFlow xmlns='http://ns.adobe.com/textLayout/2008'>" +
+                "<linkNormalFormat color='#488fbe' textDecoration='underline'/>" +
+                "<linkHoverFormat color='#488fbe' textDecoration='underline' />" +
+                "<linkActiveFormat color='#488fbe' textDecoration='underline' />";
+            tempString += "We're sorry, something went wrong. ";
+            if(numFailedItems == 1)
+            {
+                tempString += "1 file was "
+            }
+            else
+            {
+                tempString += numFailedItems.toString() + " files were "
+            }
+            tempString += "not uploaded. Try again or contact  ";
+            tempString += "<a href='mailto:support@imagenetmd.com'>support@imagenetmd.com</a>";
+            tempString += " for help.";
+            tempString += "</TextFlow>";
+            var tf:TextFlow = TextConverter.importToFlow(tempString, TextConverter.TEXT_LAYOUT_FORMAT);
+            finalLabel.textFlow = tf;
+
+            progressBar.filesTotal = numFailedItems;
         }
 
         public function updateQueue(items:Vector.<QueueItemVO>):void
         {
+            if(items.length > 0)
+            {
+                currentState = "uploadState";
+                progressBar.filesTotal = items.length;
+            }
+            else
+            {
+                currentState = "browseState";
+            }
+
             TweenNano.killTweensOf(addedToQueue_label);
             addedToQueue_label.alpha = 1;
             if(items.length == 1)
@@ -122,28 +181,49 @@
                 addedToQueue_label.text = items.length.toString() + " items were added to queue";
             }
 
-            TweenNano.to(addedToQueue_label, 0.5, {delay:4, alpha:0});
+            TweenNano.to(addedToQueue_label, 0.5, {delay:5, alpha:0});
             addQueueItems(items);
         }
+
     ]]>
     </fx:Script>
-
-    <s:HGroup gap="60" horizontalAlign="center" horizontalCenter="0" verticalCenter="0">
-        <s:Button id="selectFolder_button" label="Select folder" buttonMode="true"
-                  click="selectFolder_button_clickHandler(event)"
-                  skinClass="com.ingweland.imageNetUploader.view.skins.LightButtonSkin"/>
-        <s:Button id="selectFiles_button" label="Select files" buttonMode="true"
-                  click="selectFiles_button_clickHandler(event)"
-                  skinClass="com.ingweland.imageNetUploader.view.skins.LightButtonSkin"/>
-    </s:HGroup>
-    <s:Spacer height="12"/>
-        <components:ProgressBar id="progressBar"/>
-    <s:Spacer height="6"/>
-    <s:Button id="upload_button" label="Upload" buttonMode="true"
-              click="upload_button_clickHandler(event)" fontSize="24" icon="{CloudClass}"
-              skinClass="com.ingweland.imageNetUploader.view.skins.DarkButtonSkin"/>
-    <s:Spacer height="6"/>
-    <s:Group width="100%" height="100%">
+    <s:states>
+        <s:State name="browseState"/>
+        <s:State name="uploadState"/>
+        <s:State name="successState"/>
+        <s:State name="failState"/>
+    </s:states>
+    <s:Group width="100%" height="50%">
+        <s:Label y="70" color="0x488fbe" fontSize="30" horizontalCenter="0" fontWeight="bold"
+                 text="Secure upload of diagnostic images to ImageNetMD.com" textAlign="center"/>
+        <!--browse state-->
+        <s:Button id="upload_button" includeIn="browseState" label="Upload" buttonMode="true"
+                  click="upload_button_clickHandler(event)" fontSize="24" horizontalCenter="0"
+                  icon="{CloudClass}"
+                  skinClass="com.ingweland.imageNetUploader.view.skins.DarkButtonSkin"
+                  verticalCenter="30"/>
+        <s:Label includeIn="browseState" color="0x808080" fontSize="20" horizontalCenter="0"
+                 text="Select any folder or CD/DVD drive with diagnostic images"
+                 verticalCenter="110"/>
+        <!--upload state-->
+        <components:ProgressBar id="progressBar" includeIn="uploadState" horizontalCenter="0"
+                                verticalCenter="20"/>
+        <!--success state, fail state-->
+        <s:RichEditableText id="finalLabel" includeIn="successState, failState" width="70%"
+                            color="0x808080" editable="false" focusEnabled="false" fontSize="30"
+                            horizontalCenter="0" multiline="true" textAlign="center"
+                            verticalCenter="0" whiteSpaceCollapse="collapse"/>
+        <!--fail state-->
+        <s:HGroup includeIn="failState" y="{finalLabel.y + finalLabel.height + 20}" gap="30"
+                  horizontalCenter="0" verticalAlign="middle">
+            <s:Button id="retry_button" label="Retry" buttonMode="true"
+                      click="retry_button_clickHandler(event)" icon="{CloudClass}"
+                      skinClass="com.ingweland.imageNetUploader.view.skins.DarkButtonSmallSkin"/>
+            <s:Label text="or" color="0x808080" fontSize="18"/>
+            <s:Label fontSize="22" color="0xd94040" textDecoration="underline" buttonMode="true" text="Cancel" id="cancelRetry_label" click="cancelRetry_label_clickHandler(event)"/>
+        </s:HGroup>
+    </s:Group>
+    <s:Group bottom="0" width="100%" height="50%">
         <s:Rect width="100%" height="100%">
             <s:fill>
                 <s:SolidColor alpha="0.8" color="0xffffff"/>
@@ -172,12 +252,11 @@
                 <s:SolidColor color="0"/>
             </s:fill>
         </s:Rect>
-        <s:Label x="10" color="0xe8e8e8" fontSize="20" fontWeight="bold" text="Upload queue"
-                 y="11"/>
-        <s:Label id="addedToQueue_label" right="10" width="100%" color="0xe8e8e8" fontSize="18"
-                 fontWeight="bold" textAlign="right" y="11"/>
+        <s:Label x="10" y="11" color="0xe8e8e8" fontSize="20" fontWeight="bold" text="Upload queue"/>
+        <s:Label id="addedToQueue_label" y="11" right="10" width="100%" color="0xe8e8e8"
+                 fontSize="18" fontWeight="bold" textAlign="right"/>
         <s:Scroller top="40" bottom="0" width="100%">
-            <s:VGroup id="queueItemsContainer" gap="4" paddingTop="4" paddingBottom="4"/>
+            <s:VGroup id="queueItemsContainer" gap="4" paddingBottom="4" paddingTop="4"/>
         </s:Scroller>
     </s:Group>
-</s:VGroup>
+</s:Group>

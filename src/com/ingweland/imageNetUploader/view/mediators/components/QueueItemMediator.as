@@ -35,8 +35,6 @@ package com.ingweland.imageNetUploader.view.mediators.components
         override public function onRegister():void
         {
             addContextListener(UploadEvent.PROGRESS, removeItemHandler, UploadEvent);
-
-            addViewListener(UploadEvent.REMOVE_ITEM, redispatchUploadEventHandler, UploadEvent);
         }
 
         //----------------------------------------------------------------------
@@ -44,11 +42,6 @@ package com.ingweland.imageNetUploader.view.mediators.components
         //  Private methods
         //
         //----------------------------------------------------------------------
-
-        private function redispatchUploadEventHandler(event:UploadEvent):void
-        {
-            dispatch(event);
-        }
 
         private function removeItemHandler(event:UploadEvent):void
         {

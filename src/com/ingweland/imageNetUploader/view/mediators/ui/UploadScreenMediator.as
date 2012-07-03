@@ -36,9 +36,10 @@ package com.ingweland.imageNetUploader.view.mediators.ui
         {
             addContextListener(UploadEvent.COMPLETED, successfulUploadHandler, UploadEvent);
             addContextListener(UploadEvent.QUEUE_UPDATED, updateQueuHandler, UploadEvent);
+            addContextListener(UploadEvent.FAILED, failedUploadHandler, UploadEvent);
 
             addViewListener(UploadEvent.FILES_SELECTED, redispatchUploadEventHandler, UploadEvent);
-            addViewListener(UploadEvent.UPLOAD, redispatchUploadEventHandler, UploadEvent);
+            addViewListener(UploadEvent.RETRY, redispatchUploadEventHandler, UploadEvent);
         }
 
         //----------------------------------------------------------------------
@@ -60,6 +61,11 @@ package com.ingweland.imageNetUploader.view.mediators.ui
         private function updateQueuHandler(event:UploadEvent):void
         {
             view.updateQueue(event.queueItems);
+        }
+
+        private function failedUploadHandler(event:UploadEvent):void
+        {
+            view.processFailedUpload(event.filesLeft);
         }
     }
 }

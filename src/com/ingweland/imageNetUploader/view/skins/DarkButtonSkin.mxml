@@ -59,7 +59,7 @@ in accordance with the terms of the license agreement accompanying it.
     <!--- @copy spark.components.supportClasses.ButtonBase#labelDisplay  -->
     <s:Label id="labelDisplay"
              textAlign="center"
-             maxDisplayedLines="1" fontSize="34" fontWeight="bold" color="0x909090"
+             maxDisplayedLines="1" fontSize="34" fontWeight="bold" color="0xe8e8e8"
              horizontalCenter="0" verticalCenter="1" verticalAlign="middle"
              left="10" right="10" top="2" bottom="2">
         <s:filters>
