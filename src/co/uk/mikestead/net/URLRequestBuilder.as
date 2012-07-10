@@ -30,13 +30,13 @@
 */
 package co.uk.mikestead.net
 {
+    import co.uk.mikestead.net.URLFileVariable;
+
+    import flash.net.URLRequest;
     import flash.net.URLRequestHeader;
     import flash.net.URLRequestMethod;
-    import flash.net.URLRequest;
     import flash.net.URLVariables;
     import flash.utils.ByteArray;
-
-    import co.uk.mikestead.net.URLFileVariable;
 
     /**
      * The <code>URLRequestBuilder</code> class takes an instance of <code>URLVariables</code>
@@ -92,14 +92,17 @@ package co.uk.mikestead.net
         /** The variables to encode within a URLRequest */
         private var variables:URLVariables;
 
+        private var  _contentType:String = "application/octet-stream";
+
         /**
          * Constructor.
          *
          * @param variables The URLVariables to encode within a URLRequest.
          */
-        public function URLRequestBuilder(variables:URLVariables)
+        public function URLRequestBuilder(variables:URLVariables, contentType:String)
         {
              this.variables = variables;
+             _contentType = contentType;
         }
 
         /**
@@ -185,7 +188,7 @@ package co.uk.mikestead.net
             field.writeUTFBytes(MULTIPART_MARK + MULTIPART_BOUNDARY + LF +
                                 "Content-Disposition: form-data; name=\"" + id +  "\"; " +
                                 "filename=\"" + file.name + "\"" + LF +
-                                "Content-Type: application/octet-stream" + LF + LF);
+                                "Content-Type: " + _contentType + LF + LF);
 
             field.writeBytes(file.data);
             field.writeUTFBytes(LF);

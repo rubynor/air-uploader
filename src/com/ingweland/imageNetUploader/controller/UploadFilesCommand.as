@@ -97,8 +97,8 @@ package com.ingweland.imageNetUploader.controller
                     "?auth_token=" + userModel.authToken;
                 var variables:URLVariables = new URLVariables();
                     variables["dicom[file]"] = new URLFileVariable(zipFile(_currentQueueItem.file),
-                        _currentQueueItem.file.name);
-                var request:URLRequest = new URLRequestBuilder(variables).build();
+                        _currentQueueItem.file.name + ".zip");
+                var request:URLRequest = new URLRequestBuilder(variables, "application/zip").build();
                 request.url = url;
                 request.method = "POST";
                 loader.addEventListener(Event.COMPLETE, upload_completeHandler);

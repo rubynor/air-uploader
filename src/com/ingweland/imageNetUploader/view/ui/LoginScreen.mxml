@@ -19,6 +19,8 @@
     <![CDATA[
         import com.ingweland.imageNetUploader.events.controller.LoginEvent;
 
+        import mx.events.FlexEvent;
+
         //----------------------------------------------------------------------
         //
         //  Public methods
@@ -39,10 +41,26 @@
 
         protected function login_button_clickHandler(event:MouseEvent):void
         {
+            doLogin();
+        }
+
+        protected function userName_ti_enterHandler(event:FlexEvent):void
+        {
+            doLogin();
+        }
+
+        private function doLogin():void
+        {
             fail_label.visible = false;
             login_button.mouseEnabled = false;
             dispatchEvent(new LoginEvent(LoginEvent.LOGIN, userName_ti.text, password_ti.text));
         }
+
+        protected function password_ti_enterHandler(event:FlexEvent):void
+        {
+            doLogin();
+        }
+
     ]]>
     </fx:Script>
     <s:filters>
@@ -63,11 +81,13 @@
         <s:Label width="100%" text="Username" color="0x545454" fontSize="20" />
         <s:Spacer height="2"/>
         <s:TextInput id="userName_ti" width="100%" height="36"
+                     enter="userName_ti_enterHandler(event)"
                      skinClass="com.ingweland.imageNetUploader.view.skins.CustomTextInputSkin"/>
         <s:Spacer height="14"/>
         <s:Label width="100%" text="Password" fontSize="20" color="0x545454" />
         <s:Spacer height="2"/>
         <s:TextInput id="password_ti" width="100%" height="36" displayAsPassword="true"
+                     enter="password_ti_enterHandler(event)"
                      skinClass="com.ingweland.imageNetUploader.view.skins.CustomTextInputSkin"/>
         <s:Spacer height="5"/>
         <s:Label color="0xba0000" visible="false" id="fail_label" text="Login failed" fontSize="14" width="100%"/>
