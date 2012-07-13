@@ -53,11 +53,6 @@
             dispatchEvent(new UploadEvent(UploadEvent.FILES_SELECTED, initListing));
         }
 
-        protected function files_selectHandler(event:FileListEvent):void
-        {
-            dispatchEvent(new UploadEvent(UploadEvent.FILES_SELECTED, event.files));
-        }
-
         private function addQueueItems(items:Vector.<QueueItemVO>):void
         {
             var item:QueueItem;
@@ -164,6 +159,7 @@
             {
                 currentState = "uploadState";
                 progressBar.filesTotal = items.length;
+                progressBar.setLabel("Preparing upload, please wait...");
             }
             else
             {
