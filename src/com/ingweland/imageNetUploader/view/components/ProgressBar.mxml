@@ -69,10 +69,14 @@
 
         public function updateProgress(filesLeft:int, percentageCompleted:Number):void
         {
-            progressLabel.text = filesLeft.toString() + " of " + _filesTotal.toString() +
-                " files left";
+            setLabel(filesLeft.toString() + " of " + _filesTotal.toString() + " files left");
 
             TweenNano.to(_mask, 0.4, {scaleX: percentageCompleted});
+        }
+
+        public function setLabel(value:String):void
+        {
+            progressLabel.text = value;
         }
 
         //----------------------------------------------------------------------
@@ -99,7 +103,6 @@
 
         protected function this_removedFromStageHandler(event:Event):void
         {
-            trace("ProgressBar.this_removedFromStageHandler(event)");
             progressLabel.text = "";
             _mask.scaleX = 0;
         }
